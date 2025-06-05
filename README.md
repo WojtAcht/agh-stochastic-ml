@@ -22,6 +22,7 @@ This course explores various problems at the intersection of optimization and ma
 | 10 | Differential Evolution | Implements Differential Evolution from scratch. |
 | 11 | LLM × EA | Evolution of Heuristics |
 | 12 | Cuckoo Search | Explores the common issue of seemingly new optimization algorithms that may not offer genuinely novel ideas, focusing on Cuckoo Search and its critical analysis. |
+| 13 | Multiobjective Optimization | Demonstrates multiobjective optimization techniques to find optimal asset allocations for investment portfolios. |
 
 ## Issues and Contributions
 
