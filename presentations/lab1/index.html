@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stochastic Gradient Descent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Cardo', serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .slide-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 80px;
+    }
+
+    .slide {
+      display: none !important;
+      width: 100%;
+      max-width: 1400px;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .slide.active {
+      display: block !important;
+      animation: fadeIn 0.3s ease-out;
+      position: relative;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Title slide */
+    .title-slide.active {
+      display: flex !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 60vh;
+    }
+
+    .title-slide h1 {
+      font-family: 'Cardo', serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+      color: #1a1a1a;
+      margin-bottom: 24px;
+    }
+
+    .title-slide .subtitle {
+      font-family: 'Roboto', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 300;
+      color: #666;
+      max-width: 600px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .title-slide .course {
+      font-family: 'Roboto', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #888;
+    }
+
+    /* Section label */
+    .section-label {
+      font-family: 'Roboto', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    /* Content slides */
+    .slide h2 {
+      font-family: 'Cardo', serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+
+    .slide .paper-ref {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 300;
+      color: #888;
+      margin-bottom: 24px;
+      font-style: italic;
+    }
+
+    .slide .paper-ref a {
+      color: #888;
+      text-decoration: underline;
+      text-decoration-color: rgba(136, 136, 136, 0.4);
+      text-underline-offset: 2px;
+    }
+
+    .slide .paper-ref a:hover {
+      color: #555;
+      text-decoration-color: #555;
+    }
+
+    /* Two-column layout */
+    .slide-content {
+      display: flex;
+      gap: 50px;
+      align-items: center;
+      min-height: 0;
+    }
+
+    .text-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .viz-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Cards */
+    .card {
+      background: #fafafa;
+      border-left: 4px solid #1a1a1a;
+      border-radius: 6px;
+      padding: 16px 20px;
+    }
+
+    .card h3 {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .card p,
+    .card li {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 300;
+      line-height: 1.65;
+      color: #2a2a2a;
+    }
+
+    .card ul {
+      padding-left: 18px;
+    }
+
+    .card li {
+      margin-bottom: 4px;
+    }
+
+    /* Formula box */
+    .formula-box {
+      background: #fafafa;
+      border: 2px solid #1a1a1a;
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+      font-size: 1.1em;
+      color: #1a1a1a;
+    }
+
+    /* Highlights */
+    .highlight {
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .highlight2 {
+      font-weight: 500;
+      color: #555;
+    }
+
+    .highlight3 {
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .highlight4 {
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    /* Canvas */
+    canvas {
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .controls label {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: #888;
+    }
+
+    .controls input[type=range] {
+      width: 120px;
+      accent-color: #1a1a1a;
+    }
+
+    .controls button {
+      font-family: 'Roboto', sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      transition: opacity 0.2s;
+    }
+
+    .controls button:hover {
+      opacity: 0.75;
+    }
+
+    .viz-hint {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 300;
+      color: #999;
+      margin-top: 6px;
+      text-align: center;
+      font-style: italic;
+    }
+
+    .legend {
+      display: flex;
+      gap: 20px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: #555;
+      margin-top: 10px;
+    }
+
+    .legend span::before {
+      content: '';
+      display: inline-block;
+      width: 14px;
+      height: 3px;
+      border-radius: 2px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .leg-gd::before {
+      background: #ffffff;
+      border: 1px solid #999;
+    }
+
+    .leg-sgd::before {
+      background: #ff2d6f;
+    }
+
+    .leg-train::before {
+      background: #2563eb;
+    }
+
+    .leg-val::before {
+      background: #c77b3c;
+    }
+
+    /* Table */
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.85rem;
+      margin-top: 6px;
+    }
+
+    .mini-table th,
+    .mini-table td {
+      padding: 6px 10px;
+      text-align: left;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    .mini-table th {
+      font-weight: 500;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.78rem;
+    }
+
+    .mini-table td {
+      font-weight: 300;
+      color: #2a2a2a;
+    }
+
+    /* Slide number */
+    .slide-number {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 1.2rem;
+      color: #999;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="slide-container">
+
+    <!-- ============== SLIDE 0: TITLE ============== -->
+    <div class="slide title-slide active" id="slide-0">
+      <h1>Stochastic Gradient Descent</h1>
+      <p class="subtitle">Understanding optimization dynamics, loss landscapes, and surprising generalization behaviors
+      </p>
+      <p class="course">Stochastic Methods in Machine Learning: AGH</p>
+    </div>
+
+    <!-- ============== SLIDE 1: SGD ============== -->
+    <div class="slide" id="slide-1">
+      <div class="section-label">Optimization</div>
+      <h2>Stochastic Gradient Descent</h2>
+      <div class="slide-content">
+        <div class="text-col">
+          <div class="formula-box">
+            $$\theta_{t+1} = \theta_t - \eta \cdot \nabla L(\theta_t;\, x_i, y_i)$$
+          </div>
+          <div class="card">
+            <h3>Why the Negative Gradient?</h3>
+            <p>The gradient $\nabla L$ points in the direction of <span class="highlight">steepest ascent</span>.
+              Moving in the <span class="highlight">negative gradient</span> direction gives steepest descent:
+              the fastest local decrease of the loss.</p>
+          </div>
+          <div class="card">
+            <h3>Full-Batch GD vs Mini-Batch SGD</h3>
+            <ul>
+              <li><span class="highlight">Full-batch GD</span>: Computes gradient over entire dataset: smooth,
+                deterministic path</li>
+              <li><span class="highlight">Mini-batch SGD</span>: Approximates gradient from a random subset:
+                noisy but faster per step</li>
+              <li>The noise is not a bug: it helps escape <em>sharp minima</em> and acts as implicit
+                regularization</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Learning Rate $\eta$</h3>
+            <p>Too large &rarr; overshoots minimum, may diverge<br>
+              Too small &rarr; very slow convergence</p>
+          </div>
+        </div>
+        <div class="viz-col">
+          <canvas id="sgd-canvas" width="480" height="400"></canvas>
+          <div class="legend">
+            <span class="leg-gd">Full-batch GD</span>
+            <span class="leg-sgd">Mini-batch SGD</span>
+          </div>
+          <div class="controls">
+            <label>LR: <input type="range" id="sgd-lr" min="1" max="20" value="8"></label>
+            <button id="sgd-reset">Click canvas to start</button>
+          </div>
+          <p class="viz-hint">Click anywhere on the contour plot to place a starting point</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== SLIDE 2: THREE FACTORS ============== -->
+    <div class="slide" id="slide-2">
+      <div class="section-label">Noise Dynamics</div>
+      <h2>Three Factors Influencing Minima in SGD</h2>
+      <p class="paper-ref"><a href="https://arxiv.org/abs/1711.04623" target="_blank">Jastrzebski, Kenton, Arpit, Ballas, Fischer, Bengio &amp; Storkey, 2018</a></p>
+      <div class="slide-content">
+        <div class="text-col">
+          <div class="formula-box">
+            $$d\theta = -g(\theta)\,dt + \sqrt{\frac{\eta}{S}}\, R(\theta)\, dW(t)$$
+          </div>
+          <div class="card">
+            <h3>The Key Ratio: $\eta / S$</h3>
+            <p>The <span class="highlight">noise scale</span> (effective temperature) of SGD is $\eta / S$ (learning
+              rate / batch size). Only this ratio matters, not individual values!</p>
+            <ul>
+              <li><span class="highlight">Higher $\eta/S$</span> &rarr; more noise &rarr; escapes sharp minima &rarr;
+                finds flat minima</li>
+              <li><span class="highlight">Lower $\eta/S$</span> &rarr; less noise &rarr; gets trapped in sharp minima
+              </li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Three Factors</h3>
+            <table class="mini-table">
+              <tr>
+                <th>Factor</th>
+                <th>Effect</th>
+              </tr>
+              <tr>
+                <td>Learning rate $\eta$</td>
+                <td>Higher &rarr; more noise, wider minima</td>
+              </tr>
+              <tr>
+                <td>Batch size $S$</td>
+                <td>Smaller &rarr; more noise, wider minima</td>
+              </tr>
+              <tr>
+                <td>Gradient covariance</td>
+                <td>Determines noise structure (anisotropic)</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== SLIDE 3: SHARP VS FLAT MINIMA ============== -->
+    <div class="slide" id="slide-3">
+      <div class="section-label">Loss Landscape</div>
+      <h2>Large-Batch Training: Sharp vs Flat Minima</h2>
+      <p class="paper-ref"><a href="https://arxiv.org/abs/1609.04836" target="_blank">Keskar, Mudigere, Nocedal, Smelyanskiy &amp; Tang, 2017</a></p>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding:20px 40px;">
+        <div class="card" style="width:100%; max-width:1200px;">
+          <h3>The Generalization Gap</h3>
+          <p>Large batches achieve similar <em>training</em> accuracy but <span class="highlight">up to 5%
+              worse</span> test accuracy. Why?</p>
+          <ul>
+            <li><span class="highlight">Large batch</span> &rarr; low noise &rarr; sharp minima &rarr; poor
+              generalization</li>
+            <li><span class="highlight">Small batch</span> &rarr; high noise &rarr; flat minima &rarr; good
+              generalization</li>
+          </ul>
+        </div>
+        <div class="card" style="width:100%; max-width:1200px;">
+          <h3>Sharpness Metric</h3>
+          <div class="formula-box">
+            $$\phi(\epsilon, A) = \frac{\max_{y \in \mathcal{C}_\epsilon} f(x+Ay) - f(x)}{1 + f(x)} \times 100$$
+          </div>
+          <p style="margin-top:8px;">Measures how much loss can increase in a neighborhood. Sharp minima &rarr; high
+            $\phi$.</p>
+        </div>
+        <img src="flat_vs_sharp_minima.png" alt="Sharp vs Flat Minima" style="max-width:700px; width:100%; border-radius:6px;">
+      </div>
+    </div>
+
+    <!-- ============== SLIDE 4: DOUBLE DESCENT ============== -->
+    <div class="slide" id="slide-4">
+      <div class="section-label">Generalization</div>
+      <h2>Double Descent</h2>
+      <p class="paper-ref"><a href="https://arxiv.org/abs/1812.11118" target="_blank">Belkin et al., 2019: "Reconciling modern ML practice and the bias-variance trade-off"</a>
+      </p>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding:20px 40px;">
+        <div class="card" style="width:100%; max-width:1200px;">
+          <h3>The Classical View</h3>
+          <p>Bias-variance trade-off predicts a <span class="highlight">U-shaped</span> test error curve: underfitting
+            &rarr; sweet spot &rarr; overfitting. But modern overparameterized models defy this!</p>
+        </div>
+        <div class="card" style="width:100%; max-width:1200px;">
+          <h3>Three Regimes</h3>
+          <table class="mini-table">
+            <tr>
+              <th>Regime</th>
+              <th>Description</th>
+            </tr>
+            <tr>
+              <td><span class="highlight">Under-param.</span><br>$(p &lt; n)$</td>
+              <td>Classical U-shape. More params reduce bias, eventually increase variance.</td>
+            </tr>
+            <tr>
+              <td><span class="highlight">Interpolation</span><br>$(p \approx n)$</td>
+              <td>Model barely fits all training data: maximally jagged, highest test error.</td>
+            </tr>
+            <tr>
+              <td><span class="highlight">Over-param.</span><br>$(p \gg n)$</td>
+              <td>Many interpolating solutions exist. Optimizer's implicit bias selects smoother ones: test
+                error <em>decreases</em> again.</td>
+            </tr>
+          </table>
+        </div>
+        <img src="double_descent.png" alt="Double Descent" style="max-width:700px; width:100%; border-radius:6px;">
+      </div>
+    </div>
+
+    <!-- ============== SLIDE 5: GROKKING ============== -->
+    <div class="slide" id="slide-5">
+      <div class="section-label">Delayed Generalization</div>
+      <h2>Grokking</h2>
+      <p class="paper-ref"><a href="https://arxiv.org/abs/2201.02177" target="_blank">Power, Burda, Edwards, Babuschkin &amp; Misra, 2022</a></p>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:16px; padding:20px 40px;">
+        <div class="card" style="width:100%; max-width:1200px;">
+          <h3>Critical Role of Weight Decay</h3>
+          <p><span class="highlight">Weight decay is essential</span> for grokking. Without it, the model memorizes
+            but never generalizes. It acts as regularization pressure, pushing the network from memorization toward
+            discovering true algebraic structure.</p>
+        </div>
+        <div class="card" style="width:100%; max-width:1200px;">
+          <h3>Key Insight</h3>
+          <p>Generalization can happen <em>long after</em> memorization. Conventional early stopping would miss it
+            entirely. Challenges the view that memorization and generalization are competing alternatives at similar
+            training times.</p>
+        </div>
+        <img src="grokking.png" alt="Grokking" style="max-width:700px; width:100%; border-radius:6px;">
+      </div>
+    </div>
+
+    <!-- ============== SLIDE 6: INTERVIEW QUESTION ============== -->
+    <div class="slide" id="slide-6">
+      <div class="section-label">ML Engineer Interview</div>
+      <h2>"Explain Overfitting"</h2>
+      <div style="display:flex; gap:32px; padding:20px 40px; align-items:stretch;">
+        <div style="flex:1; display:flex; flex-direction:column;">
+          <div class="card" style="flex:1; border-left: 3px solid #b05050;">
+            <h3 style="color:#b05050;">Naive Answer</h3>
+            <p>"Overfitting is when the model memorizes the training data instead of learning the underlying pattern.
+              It happens when the model is too complex. The solution is to use regularization, early stopping,
+              or reduce model size."</p>
+          </div>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column;">
+          <div class="card" style="flex:1; border-left: 3px solid #2d6a4f;">
+            <h3 style="color:#2d6a4f;">Nuanced Answer</h3>
+            <p>"The classical view says more parameters inevitably leads to overfitting, but modern deep learning
+              shows this isn't the full picture:</p>
+            <ul>
+              <li><span class="highlight">Double descent</span>: Beyond the interpolation threshold ($p \approx n$),
+                test error <em>decreases again</em>. Overparameterized models can generalize well without explicit
+                regularization.</li>
+              <li><span class="highlight">SGD noise matters</span>: The ratio $\eta/S$ acts as implicit regularization.
+                Small batches and larger learning rates push optimization toward flat minima, which generalize
+                better than sharp ones.</li>
+              <li><span class="highlight">Sharp vs flat minima</span>: Overfitting isn't just about model size:
+                it's about <em>which minimum</em> you land in. Large-batch training finds sharp minima with poor
+                generalization, even at the same training loss.</li>
+              <li><span class="highlight">Grokking</span>: Memorization and generalization aren't mutually exclusive.
+                A model can perfectly memorize training data, then <em>suddenly generalize</em> much later:
+                if you train long enough with weight decay."</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="slide-number">
+    <span id="current-slide">1</span> /
+    <span id="total-slides">6</span>
+  </div>
+
+  <script>
+    // ==================== SLIDE NAVIGATION ====================
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+
+    document.getElementById('total-slides').textContent = totalSlides;
+
+    function showSlide(n) {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (n + totalSlides) % totalSlides;
+      slides[currentSlide].classList.add('active');
+      document.getElementById('current-slide').textContent = currentSlide + 1;
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); showSlide(currentSlide + 1); }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); showSlide(currentSlide - 1); }
+      if (e.key === 'Home') { e.preventDefault(); showSlide(0); }
+      if (e.key === 'End') { e.preventDefault(); showSlide(totalSlides - 1); }
+    });
+
+    // Touch/swipe support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', e => {
+      const diff = touchStartX - e.changedTouches[0].screenX;
+      if (Math.abs(diff) > 50) { diff > 0 ? showSlide(currentSlide + 1) : showSlide(currentSlide - 1); }
+    });
+
+    // ==================== SLIDE 1: SGD VISUALIZATION ====================
+    (function () {
+      const canvas = document.getElementById('sgd-canvas');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+
+      function loss(x, y) {
+        const a = x - 0.3, b = y - 0.3;
+        return 3 * a * a + 5 * b * b + 4 * a * b + 0.8 * Math.sin(4 * x) * Math.cos(3 * y);
+      }
+
+      function grad(x, y) {
+        const h = 0.001;
+        return [
+          (loss(x + h, y) - loss(x - h, y)) / (2 * h),
+          (loss(x, y + h) - loss(x, y - h)) / (2 * h)
+        ];
+      }
+
+      function drawContours() {
+        const img = ctx.createImageData(W, H);
+        let maxL = 0, minL = Infinity;
+        const vals = new Float32Array(W * H);
+        for (let py = 0; py < H; py++) {
+          for (let px = 0; px < W; px++) {
+            const x = (px / W) * 2 - 1, y = (py / H) * 2 - 1;
+            const v = loss(x, y);
+            vals[py * W + px] = v;
+            maxL = Math.max(maxL, v);
+            minL = Math.min(minL, v);
+          }
+        }
+        for (let py = 0; py < H; py++) {
+          for (let px = 0; px < W; px++) {
+            const i = (py * W + px) * 4;
+            const t = (vals[py * W + px] - minL) / (maxL - minL);
+            let r, g, b;
+            if (t < 0.25) {
+              const s = t / 0.25;
+              r = 30 + 10 * s; g = 60 + 60 * s; b = 150 + 30 * s;
+            } else if (t < 0.5) {
+              const s = (t - 0.25) / 0.25;
+              r = 40 + 60 * s; g = 120 + 50 * s; b = 180 - 60 * s;
+            } else if (t < 0.75) {
+              const s = (t - 0.5) / 0.25;
+              r = 100 + 120 * s; g = 170 + 50 * s; b = 120 - 60 * s;
+            } else {
+              const s = (t - 0.75) / 0.25;
+              r = 220 + 35 * s; g = 220 - 40 * s; b = 60 - 30 * s;
+            }
+            img.data[i] = Math.floor(r);
+            img.data[i + 1] = Math.floor(g);
+            img.data[i + 2] = Math.floor(b);
+            img.data[i + 3] = 255;
+          }
+        }
+        ctx.putImageData(img, 0, 0);
+
+        const levels = 18;
+        for (let l = 0; l < levels; l++) {
+          const threshold = minL + (maxL - minL) * l / levels;
+          for (let py = 1; py < H; py += 2) {
+            for (let px = 1; px < W; px += 2) {
+              const v = vals[py * W + px];
+              const vr = vals[py * W + px + 1] || v;
+              const vb = vals[Math.min(py + 1, H - 1) * W + px] || v;
+              if ((v - threshold) * (vr - threshold) < 0 || (v - threshold) * (vb - threshold) < 0) {
+                ctx.fillStyle = 'rgba(0,0,0,0.25)';
+                ctx.fillRect(px, py, 1, 1);
+              }
+            }
+          }
+        }
+      }
+
+      function toCanvas(x, y) { return [(x + 1) / 2 * W, (y + 1) / 2 * H]; }
+
+      let gdPath = [], sgdPath = [];
+      let animFrame = null;
+
+      function drawPaths() {
+        drawContours();
+        const [mx, my] = toCanvas(0.12, 0.48);
+        ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(mx, my, 10, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(mx, my, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.beginPath(); ctx.moveTo(mx - 15, my); ctx.lineTo(mx - 6, my); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(mx + 6, my); ctx.lineTo(mx + 15, my); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(mx, my - 15); ctx.lineTo(mx, my - 6); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(mx, my + 6); ctx.lineTo(mx, my + 15); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font = '10px Roboto, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('minimum', mx + 16, my + 4);
+
+        if (gdPath.length > 1) {
+          ctx.beginPath();
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
+          const [sx, sy] = toCanvas(gdPath[0][0], gdPath[0][1]);
+          ctx.moveTo(sx, sy);
+          for (let i = 1; i < gdPath.length; i++) {
+            const [px, py] = toCanvas(gdPath[i][0], gdPath[i][1]);
+            ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+        }
+
+        if (sgdPath.length > 1) {
+          ctx.beginPath();
+          ctx.strokeStyle = '#ff2d6f'; ctx.lineWidth = 2.5;
+          const [sx, sy] = toCanvas(sgdPath[0][0], sgdPath[0][1]);
+          ctx.moveTo(sx, sy);
+          for (let i = 1; i < sgdPath.length; i++) {
+            const [px, py] = toCanvas(sgdPath[i][0], sgdPath[i][1]);
+            ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+        }
+
+        [gdPath, sgdPath].forEach((path, idx) => {
+          if (path.length > 0) {
+            const last = path[path.length - 1];
+            const [px, py] = toCanvas(last[0], last[1]);
+            ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2);
+            ctx.fillStyle = idx === 0 ? '#ffffff' : '#ff2d6f'; ctx.fill();
+          }
+        });
+      }
+
+      function startOptimization(startX, startY) {
+        if (animFrame) cancelAnimationFrame(animFrame);
+        gdPath = [[startX, startY]];
+        sgdPath = [[startX, startY]];
+        const lr = document.getElementById('sgd-lr').value / 200;
+        let step = 0;
+
+        function animate() {
+          if (step > 120) return;
+          step++;
+          const gLast = gdPath[gdPath.length - 1];
+          const g = grad(gLast[0], gLast[1]);
+          gdPath.push([gLast[0] - lr * g[0], gLast[1] - lr * g[1]]);
+
+          const sLast = sgdPath[sgdPath.length - 1];
+          const sg = grad(sLast[0], sLast[1]);
+          const noise = 0.35;
+          sgdPath.push([
+            sLast[0] - lr * (sg[0] + noise * (Math.random() - 0.5)),
+            sLast[1] - lr * (sg[1] + noise * (Math.random() - 0.5))
+          ]);
+
+          drawPaths();
+          animFrame = requestAnimationFrame(animate);
+        }
+        animate();
+      }
+
+      canvas.addEventListener('click', e => {
+        e.stopPropagation();
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width * 2 - 1;
+        const y = (e.clientY - rect.top) / rect.height * 2 - 1;
+        startOptimization(x, y);
+      });
+
+      document.getElementById('sgd-reset').addEventListener('click', e => {
+        e.stopPropagation();
+        if (animFrame) cancelAnimationFrame(animFrame);
+        gdPath = []; sgdPath = [];
+        drawContours();
+      });
+
+      drawContours();
+    })();
+
+
+
+  </script>
+</body>
+
+</html>
