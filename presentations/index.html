@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stochastic Methods in ML: Presentations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Cardo', serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 40px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+    }
+
+    h1 {
+      font-family: 'Cardo', serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-family: 'Roboto', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: #888;
+      margin-bottom: 48px;
+    }
+
+    .presentation-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .presentation-link {
+      display: block;
+      background: #fafafa;
+      border-left: 4px solid #1a1a1a;
+      border-radius: 6px;
+      padding: 20px 24px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .presentation-link:hover {
+      transform: translateX(4px);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .presentation-link h2 {
+      font-family: 'Cardo', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+
+    .presentation-link .description {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 300;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    .presentation-link .label {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Presentations</h1>
+    <p class="subtitle">Stochastic Methods in Machine Learning &mdash; AGH</p>
+
+    <div class="presentation-list">
+      <a class="presentation-link" href="lab1/">
+        <div class="label">Lab 1</div>
+        <h2>Stochastic Gradient Descent</h2>
+        <p class="description">Optimization dynamics, loss landscapes, sharp vs flat minima, double descent, and grokking.</p>
+      </a>
+    </div>
+  </div>
+</body>
+
+</html>
