@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Building Blocks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cardo', serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .slide-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 80px;
+        }
+
+        .slide {
+            display: none !important;
+            width: 100%;
+            max-width: 1400px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .slide.active {
+            display: block !important;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .title-slide.active {
+            display: flex !important;
+            min-height: 60vh;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .title-slide h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+            margin-bottom: 24px;
+        }
+
+        .title-slide .subtitle {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.45rem;
+            font-weight: 300;
+            color: #666;
+            max-width: 760px;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .title-slide .course,
+        .section-label {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #888;
+        }
+
+        .section-label {
+            margin-bottom: 8px;
+        }
+
+        .slide h2 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+            margin-bottom: 10px;
+        }
+
+        .slide-content {
+            display: flex;
+            gap: 42px;
+            align-items: center;
+        }
+
+        .text-col,
+        .viz-col {
+            flex: 1;
+        }
+
+        .text-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .viz-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card {
+            background: #fafafa;
+            border-left: 4px solid #1a1a1a;
+            border-radius: 6px;
+            padding: 16px 20px;
+        }
+
+        .card h3 {
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .card p,
+        .card li,
+        .card td,
+        .card th {
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 300;
+            line-height: 1.65;
+            color: #2a2a2a;
+        }
+
+        .card ul {
+            padding-left: 18px;
+        }
+
+        .formula-box {
+            background: #fafafa;
+            border: 2px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 14px 18px;
+            text-align: center;
+            font-size: 1.08em;
+        }
+
+        .mini-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .mini-table th,
+        .mini-table td {
+            text-align: left;
+            padding: 7px 10px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .mini-table th {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #888;
+            font-weight: 500;
+        }
+
+        .nn-edge {
+            stroke: #6b7280;
+            stroke-width: 1.4;
+            opacity: 0.8;
+        }
+
+        .nn-node {
+            fill: #1a1a1a;
+        }
+
+        .nn-label {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 11px;
+            fill: #4b5563;
+        }
+
+        .optimizer-wrap {
+            position: relative;
+            width: 520px;
+            height: 360px;
+            border: 1px solid #e0e0e0;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .optimizer-title {
+            position: absolute;
+            left: 14px;
+            top: 10px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.82rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .dot.sgd {
+            background: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+
+        .dot.adam {
+            background: #b45309;
+            box-shadow: 0 0 0 2px rgba(180, 83, 9, 0.2);
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .legend span::before {
+            content: '';
+            display: inline-block;
+            width: 13px;
+            height: 3px;
+            border-radius: 2px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        .leg-sgd::before {
+            background: #2563eb;
+        }
+
+        .leg-adam::before {
+            background: #b45309;
+        }
+
+        .training-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .training-grid .box {
+            background: #fafafa;
+            border: 2px solid #1a1a1a;
+            border-radius: 10px;
+            text-align: center;
+            padding: 18px;
+        }
+
+        .training-grid .box h3 {
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #777;
+            margin-bottom: 8px;
+        }
+
+        .training-grid .eq {
+            font-size: 3rem;
+        }
+
+        .slide-number {
+            position: fixed;
+            right: 40px;
+            bottom: 40px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.2rem;
+            color: #999;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slide-container">
+        <div class="slide title-slide active" id="slide-0">
+            <h1>What Do We Need For ML?</h1>
+            <p class="subtitle">Data, model, loss, and optimizer. Four ingredients, one optimization problem.</p>
+            <p class="course">Stochastic Methods in Machine Learning: AGH</p>
+        </div>
+
+        <div class="slide" id="slide-1">
+            <div class="section-label">Ingredient 1</div>
+            <h2>Data</h2>
+            <div class="slide-content">
+                <div class="text-col">
+                    <div class="card">
+                        <h3>Raw Material</h3>
+                        <p>Learning starts from examples $(x, y)$. No data means no signal.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Core Workflow</h3>
+                        <ul>
+                            <li>Collect and clean samples</li>
+                            <li>Train/validation/test split</li>
+                            <li>Feature engineering / normalization</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="viz-col">
+                    <div class="card" style="width:100%;max-width:520px;">
+                        <h3>Example Dataset</h3>
+                        <table class="mini-table">
+                            <tr>
+                                <th>ID</th>
+                                <th>Feature A</th>
+                                <th>Feature B</th>
+                                <th>Feature C</th>
+                                <th>Label</th>
+                            </tr>
+                            <tr>
+                                <td>001</td>
+                                <td>0.72</td>
+                                <td>12</td>
+                                <td>3.6</td>
+                                <td>1</td>
+                            </tr>
+                            <tr>
+                                <td>002</td>
+                                <td>0.11</td>
+                                <td>5</td>
+                                <td>1.8</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <td>003</td>
+                                <td>0.64</td>
+                                <td>9</td>
+                                <td>2.9</td>
+                                <td>1</td>
+                            </tr>
+                            <tr>
+                                <td>004</td>
+                                <td>0.21</td>
+                                <td>4</td>
+                                <td>1.6</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <td>005</td>
+                                <td>0.83</td>
+                                <td>11</td>
+                                <td>3.3</td>
+                                <td>1</td>
+                            </tr>
+                            <tr>
+                                <td>...</td>
+                                <td>...</td>
+                                <td>...</td>
+                                <td>...</td>
+                                <td>...</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-2">
+            <div class="section-label">Ingredient 2</div>
+            <h2>Model</h2>
+            <div class="slide-content">
+                <div class="text-col">
+                    <div class="card">
+                        <h3>Function Family</h3>
+                        <p>The model defines a parameterized mapping from input to prediction.</p>
+                    </div>
+                    <div class="formula-box">$$\hat y = f_\theta(x)$$</div>
+                    <div class="card">
+                        <h3>Example</h3>
+                        <p>Neural networks stack linear layers and nonlinear activations to represent complex patterns.
+                        </p>
+                    </div>
+                </div>
+                <div class="viz-col">
+                    <svg width="520" height="360" viewBox="0 0 520 360" aria-label="Neural network">
+                        <line class="nn-edge" x1="90" y1="80" x2="250" y2="60" />
+                        <line class="nn-edge" x1="90" y1="80" x2="250" y2="120" />
+                        <line class="nn-edge" x1="90" y1="80" x2="250" y2="180" />
+                        <line class="nn-edge" x1="90" y1="160" x2="250" y2="60" />
+                        <line class="nn-edge" x1="90" y1="160" x2="250" y2="120" />
+                        <line class="nn-edge" x1="90" y1="160" x2="250" y2="180" />
+                        <line class="nn-edge" x1="90" y1="240" x2="250" y2="60" />
+                        <line class="nn-edge" x1="90" y1="240" x2="250" y2="120" />
+                        <line class="nn-edge" x1="90" y1="240" x2="250" y2="180" />
+
+                        <line class="nn-edge" x1="250" y1="60" x2="420" y2="110" />
+                        <line class="nn-edge" x1="250" y1="120" x2="420" y2="110" />
+                        <line class="nn-edge" x1="250" y1="180" x2="420" y2="110" />
+                        <line class="nn-edge" x1="250" y1="60" x2="420" y2="220" />
+                        <line class="nn-edge" x1="250" y1="120" x2="420" y2="220" />
+                        <line class="nn-edge" x1="250" y1="180" x2="420" y2="220" />
+
+                        <circle class="nn-node" cx="90" cy="80" r="15" />
+                        <circle class="nn-node" cx="90" cy="160" r="15" />
+                        <circle class="nn-node" cx="90" cy="240" r="15" />
+
+                        <circle class="nn-node" cx="250" cy="60" r="15" />
+                        <circle class="nn-node" cx="250" cy="120" r="15" />
+                        <circle class="nn-node" cx="250" cy="180" r="15" />
+
+                        <circle class="nn-node" cx="420" cy="110" r="15" />
+                        <circle class="nn-node" cx="420" cy="220" r="15" />
+
+                        <text class="nn-label" x="60" y="286">input x</text>
+                        <text class="nn-label" x="220" y="214">hidden</text>
+                        <text class="nn-label" x="394" y="255">output</text>
+                        <text class="nn-label" x="188" y="330">parameters: W, b</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-3">
+            <div class="section-label">Ingredient 3</div>
+            <h2>Loss Function</h2>
+            <div class="card" style="margin-bottom:16px;">
+                <h3>Objective</h3>
+                <p>Loss converts prediction quality into a scalar target that gradients can optimize.</p>
+            </div>
+            <div class="slide-content">
+                <div class="text-col">
+                    <div class="formula-box">$$\text{MSE}=\frac{1}{N}\sum_{i=1}^N(y_i-\hat y_i)^2$$</div>
+                    <div class="formula-box">$$\text{MAE}=\frac{1}{N}\sum_{i=1}^N|y_i-\hat y_i|$$</div>
+                </div>
+                <div class="text-col">
+                    <div class="formula-box">$$\text{Cross-Entropy}=-\frac{1}{N}\sum_{i=1}^N y_i\log(\hat y_i)$$</div>
+                    <div class="formula-box">$$\text{Hinge}=\frac{1}{N}\sum_{i=1}^N\max(0,1-y_if_\theta(x_i))$$</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-4">
+            <div class="section-label">Ingredient 4</div>
+            <h2>Training Method (Optimizer)</h2>
+            <div class="slide-content">
+                <div class="text-col">
+                    <div class="card">
+                        <h3>Update Rule</h3>
+                        <p>Optimizer controls how parameters move over the loss landscape.</p>
+                    </div>
+                    <div class="formula-box">$$\theta_{t+1}=\theta_t-\eta\nabla_\theta L(\theta_t)$$</div>
+                    <div class="card">
+                        <h3>Intuition</h3>
+                        <p>SGD takes noisy gradient steps. Adam adapts step sizes with moment estimates.</p>
+                    </div>
+                </div>
+                <div class="viz-col">
+                    <div class="optimizer-wrap">
+                        <div class="optimizer-title">Same loss surface, different trajectories</div>
+                        <canvas id="opt-canvas" width="520" height="360"></canvas>
+                        <div class="dot sgd" id="sgd-dot"></div>
+                        <div class="dot adam" id="adam-dot"></div>
+                    </div>
+                    <div class="legend">
+                        <span class="leg-sgd">SGD</span>
+                        <span class="leg-adam">Adam-like</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-5">
+            <div class="section-label">Bottom Line</div>
+            <h2>Training = Optimization</h2>
+            <div class="card">
+                <h3>Key Idea</h3>
+                <p>Training means finding parameters that minimize loss and maximize fit/model quality.</p>
+            </div>
+            <div class="training-grid">
+                <div class="box">
+                    <h3>ML Training</h3>
+                    <p>Data + Model + Loss + Optimizer</p>
+                </div>
+                <div class="eq">=</div>
+                <div class="box">
+                    <h3>Optimization Problem</h3>
+                    <p>$$\theta^*=\arg\min_\theta L(\theta;\mathcal{D})$$</p>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Equivalent Views</h3>
+                <ul>
+                    <li>Minimize prediction error</li>
+                    <li>Maximize quality/fit under a chosen metric</li>
+                    <li>Search parameter space for the best generalizing solution</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide-number"><span id="current-slide">1</span> / <span id="total-slides">6</span></div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); showSlide(currentSlide + 1); }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); showSlide(currentSlide - 1); }
+            if (e.key === 'Home') { e.preventDefault(); showSlide(0); }
+            if (e.key === 'End') { e.preventDefault(); showSlide(totalSlides - 1); }
+        });
+
+        let touchStartX = 0;
+        document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+        document.addEventListener('touchend', e => {
+            const diff = touchStartX - e.changedTouches[0].screenX;
+            if (Math.abs(diff) > 50) diff > 0 ? showSlide(currentSlide + 1) : showSlide(currentSlide - 1);
+        });
+
+        (function () {
+            const canvas = document.getElementById('opt-canvas');
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            const sgdDot = document.getElementById('sgd-dot');
+            const adamDot = document.getElementById('adam-dot');
+
+            function loss(x, y) {
+                return 1.8 * (x + 0.6) ** 2 + 0.6 * (y - 0.45) ** 2 + 0.35 * Math.sin(5.3 * x) * Math.cos(3.9 * y);
+            }
+
+            function grad(x, y) {
+                const h = 0.0008;
+                return [
+                    (loss(x + h, y) - loss(x - h, y)) / (2 * h),
+                    (loss(x, y + h) - loss(x, y - h)) / (2 * h)
+                ];
+            }
+
+            function toCanvas(x, y) { return [((x + 1) / 2) * W, ((y + 1) / 2) * H]; }
+
+            function drawLandscape() {
+                const img = ctx.createImageData(W, H);
+                const vals = new Float32Array(W * H);
+                let minV = Infinity, maxV = -Infinity;
+
+                for (let py = 0; py < H; py++) {
+                    for (let px = 0; px < W; px++) {
+                        const x = (px / W) * 2 - 1, y = (py / H) * 2 - 1;
+                        const v = loss(x, y);
+                        vals[py * W + px] = v;
+                        minV = Math.min(minV, v);
+                        maxV = Math.max(maxV, v);
+                    }
+                }
+
+                for (let py = 0; py < H; py++) {
+                    for (let px = 0; px < W; px++) {
+                        const i = (py * W + px) * 4;
+                        const t = (vals[py * W + px] - minV) / (maxV - minV);
+                        img.data[i] = 240 - Math.floor(35 * t);
+                        img.data[i + 1] = 244 - Math.floor(80 * t);
+                        img.data[i + 2] = 248 - Math.floor(95 * t);
+                        img.data[i + 3] = 255;
+                    }
+                }
+                ctx.putImageData(img, 0, 0);
+
+                for (let level = 0; level < 17; level++) {
+                    const th = minV + ((maxV - minV) * level) / 17;
+                    ctx.fillStyle = 'rgba(30, 41, 59, 0.22)';
+                    for (let py = 1; py < H - 1; py += 2) {
+                        for (let px = 1; px < W - 1; px += 2) {
+                            const v = vals[py * W + px];
+                            const vr = vals[py * W + px + 1];
+                            const vb = vals[(py + 1) * W + px];
+                            if ((v - th) * (vr - th) < 0 || (v - th) * (vb - th) < 0) ctx.fillRect(px, py, 1, 1);
+                        }
+                    }
+                }
+            }
+
+            const sgdPath = [], adamPath = [];
+            let sgdX = 0.9, sgdY = -0.85;
+            let adamX = 0.9, adamY = -0.85;
+            let mtX = 0, mtY = 0, vtX = 0, vtY = 0, t = 0;
+
+            function drawPath(path, color) {
+                if (path.length < 2) return;
+                const first = toCanvas(path[0][0], path[0][1]);
+                ctx.beginPath(); ctx.moveTo(first[0], first[1]);
+                for (let i = 1; i < path.length; i++) {
+                    const p = toCanvas(path[i][0], path[i][1]);
+                    ctx.lineTo(p[0], p[1]);
+                }
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2.3;
+                ctx.stroke();
+            }
+
+            function animate() {
+                t += 1;
+
+                const sg = grad(sgdX, sgdY);
+                const noise = 0.18;
+                sgdX -= 0.028 * (sg[0] + noise * (Math.random() - 0.5));
+                sgdY -= 0.028 * (sg[1] + noise * (Math.random() - 0.5));
+
+                const ag = grad(adamX, adamY);
+                const beta1 = 0.9, beta2 = 0.999;
+                mtX = beta1 * mtX + (1 - beta1) * ag[0];
+                mtY = beta1 * mtY + (1 - beta1) * ag[1];
+                vtX = beta2 * vtX + (1 - beta2) * ag[0] * ag[0];
+                vtY = beta2 * vtY + (1 - beta2) * ag[1] * ag[1];
+                const mtHatX = mtX / (1 - beta1 ** t), mtHatY = mtY / (1 - beta1 ** t);
+                const vtHatX = vtX / (1 - beta2 ** t), vtHatY = vtY / (1 - beta2 ** t);
+                adamX -= (0.06 * mtHatX) / (Math.sqrt(vtHatX) + 1e-5);
+                adamY -= (0.06 * mtHatY) / (Math.sqrt(vtHatY) + 1e-5);
+
+                sgdPath.push([sgdX, sgdY]); adamPath.push([adamX, adamY]);
+                if (sgdPath.length > 120) sgdPath.shift();
+                if (adamPath.length > 120) adamPath.shift();
+
+                drawLandscape();
+                drawPath(sgdPath, '#2563eb');
+                drawPath(adamPath, '#b45309');
+
+                const s = toCanvas(sgdX, sgdY), a = toCanvas(adamX, adamY);
+                sgdDot.style.left = s[0] + 'px'; sgdDot.style.top = s[1] + 'px';
+                adamDot.style.left = a[0] + 'px'; adamDot.style.top = a[1] + 'px';
+
+                requestAnimationFrame(animate);
+            }
+
+            drawLandscape();
+            requestAnimationFrame(animate);
+        })();
+    </script>
+</body>
+
+</html>
