@@ -56,14 +56,3 @@ For linear regression, the closed-form solution is
 $$\widehat{\mathbf{w}} = (\mathbf{X}^\top \mathbf{X})^{-1} \mathbf{X}^\top \mathbf{y}$$
 
 Compare the parameters and final MSE you get via gradient descent with those from the analytical solution. Are they similar?
-
-### 11. High Dimensional Example
-Extend your implementation to work with higher-dimensional data. Generate a synthetic dataset with 10 features (d=10) and:
-- Create new true weight vector and bias
-- Generate the higher-dimensional X and corresponding y
-- Train your model using gradient descent on this data
-- Compare the training process with the 1D case:
-  - Does it take more epochs to converge?
-  - How does the learning rate affect convergence in higher dimensions?
-  - Compare the final loss and accuracy of your model
-  - Visualize how well your model fits the data (you may need to use partial dependence plots or other visualization techniques for high-dimensional data)
