@@ -432,8 +432,42 @@
       </div>
     </div>
 
-    <!-- ============== SLIDE 2: THREE FACTORS ============== -->
+    <!-- ============== SLIDE 2: EDGE OF STABILITY ============== -->
     <div class="slide" id="slide-2">
+      <div class="section-label">Loss Landscape</div>
+      <h2>Edge of Stability</h2>
+      <p class="paper-ref"><a href="https://arxiv.org/abs/2103.00065" target="_blank">Cohen, Kaur, Li, Kolter &amp; Talwalkar, 2021: "Gradient Descent on Neural Networks Typically Occurs at the Edge of Stability"</a></p>
+      <div class="slide-content">
+        <div class="text-col">
+          <div class="card">
+            <h3>Sharpness as $\lambda_1(H)$</h3>
+            <p>Sharpness is measured as the <span class="highlight">largest eigenvalue of the Hessian</span> $\lambda_{\max}(\nabla^2 L)$. Classical theory says GD converges only when $\lambda_{\max} < 2/\eta$.</p>
+          </div>
+          <div class="card">
+            <h3>Full-Batch GD, Not SGD</h3>
+            <p>Unlike most analyses, this paper studies <span class="highlight">deterministic gradient descent</span> (full batch). The surprising behaviors arise <em>without</em> stochastic noise: they are intrinsic to the optimization landscape of neural networks.</p>
+          </div>
+          <div class="card">
+            <h3>The Edge of Stability Phenomenon</h3>
+            <ul>
+              <li><span class="highlight">Phase 1 (Progressive sharpening)</span>: GD steadily increases sharpness toward the threshold $2/\eta$</li>
+              <li><span class="highlight">Phase 2 (Edge of stability)</span>: Sharpness hovers at $\approx 2/\eta$, loss decreases non-monotonically with local oscillations</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Why It Matters</h3>
+            <p>Classical convergence guarantees assume sharpness stays <em>below</em> $2/\eta$ throughout training. In practice, GD <span class="highlight">self-tunes to violate this assumption</span>: it operates right at the stability boundary. This means standard theoretical results <span class="highlight">do not explain</span> why GD works on neural networks.</p>
+          </div>
+        </div>
+        <div class="viz-col">
+          <img src="edge_of_stability.png" alt="Edge of Stability" style="max-width:100%; width:100%; border-radius:6px; border:1px solid #e0e0e0;">
+          <p class="viz-hint">Top row: train loss. Bottom row: sharpness $\lambda_{\max}$. Dashed lines show $2/\eta$ stability thresholds for each learning rate.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== SLIDE 3: THREE FACTORS ============== -->
+    <div class="slide" id="slide-3">
       <div class="section-label">Noise Dynamics</div>
       <h2>Three Factors Influencing Minima in SGD</h2>
       <p class="paper-ref"><a href="https://arxiv.org/abs/1711.04623" target="_blank">Jastrzebski, Kenton, Arpit, Ballas, Fischer, Bengio &amp; Storkey, 2018</a></p>
@@ -478,8 +512,8 @@
       </div>
     </div>
 
-    <!-- ============== SLIDE 3: SHARP VS FLAT MINIMA ============== -->
-    <div class="slide" id="slide-3">
+    <!-- ============== SLIDE 4: SHARP VS FLAT MINIMA ============== -->
+    <div class="slide" id="slide-4">
       <div class="section-label">Loss Landscape</div>
       <h2>Large-Batch Training: Sharp vs Flat Minima</h2>
       <p class="paper-ref"><a href="https://arxiv.org/abs/1609.04836" target="_blank">Keskar, Mudigere, Nocedal, Smelyanskiy &amp; Tang, 2017</a></p>
@@ -507,8 +541,8 @@
       </div>
     </div>
 
-    <!-- ============== SLIDE 4: DOUBLE DESCENT ============== -->
-    <div class="slide" id="slide-4">
+    <!-- ============== SLIDE 5: DOUBLE DESCENT ============== -->
+    <div class="slide" id="slide-5">
       <div class="section-label">Generalization</div>
       <h2>Double Descent</h2>
       <p class="paper-ref"><a href="https://arxiv.org/abs/1812.11118" target="_blank">Belkin et al., 2019: "Reconciling modern ML practice and the bias-variance trade-off"</a>
@@ -545,8 +579,8 @@
       </div>
     </div>
 
-    <!-- ============== SLIDE 5: GROKKING ============== -->
-    <div class="slide" id="slide-5">
+    <!-- ============== SLIDE 6: GROKKING ============== -->
+    <div class="slide" id="slide-6">
       <div class="section-label">Delayed Generalization</div>
       <h2>Grokking</h2>
       <p class="paper-ref"><a href="https://arxiv.org/abs/2201.02177" target="_blank">Power, Burda, Edwards, Babuschkin &amp; Misra, 2022</a></p>
@@ -567,8 +601,8 @@
       </div>
     </div>
 
-    <!-- ============== SLIDE 6: INTERVIEW QUESTION ============== -->
-    <div class="slide" id="slide-6">
+    <!-- ============== SLIDE 7: INTERVIEW QUESTION ============== -->
+    <div class="slide" id="slide-7">
       <div class="section-label">ML Engineer Interview</div>
       <h2>"Explain Overfitting"</h2>
       <div style="display:flex; gap:32px; padding:20px 40px; align-items:stretch;">
@@ -608,7 +642,7 @@
 
   <div class="slide-number">
     <span id="current-slide">1</span> /
-    <span id="total-slides">6</span>
+    <span id="total-slides">7</span>
   </div>
 
   <script>
