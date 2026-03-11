@@ -83,3 +83,4 @@ Each method builds on the basic gradient step to address different challenges in
 3. Sutskever, Ilya, et al. [On the importance of initialization and momentum in deep learning.](https://proceedings.mlr.press/v28/sutskever13.pdf)
 4. [Adam — PyTorch 2.6 documentation](https://pytorch.org/docs/stable/generated/torch.optim.Adam.html)
 5. AdamW: Loshchilov, Ilya, and Frank Hutter. [Decoupled weight decay regularization.](https://arxiv.org/abs/1711.05101)
+6. [The State of Machine Learning Competitions](https://mlcontests.com/state-of-machine-learning-competitions-2025/)
