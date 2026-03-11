@@ -170,13 +170,18 @@ def momentum(
     alpha: float,
     beta: float,
     number_of_epochs: int,
-): 
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     ...
 ```
 Where:
 - initial_solution is your starting point.
 - alpha is the learning rate.
 - beta is the momentum parameter (commonly 0.9).
+
+Returns a tuple of:
+- positions: np.ndarray of shape (number_of_epochs, dim) — the optimization path.
+- function_values: np.ndarray of shape (number_of_epochs,) — function value at each epoch.
+- velocity_norms: np.ndarray of shape (number_of_epochs,) — velocity norm at each epoch.
 
 ### 3. Experiments with Momentum
 
@@ -189,7 +194,7 @@ Observe how Momentum performs on different functions. Use following parameters:
 For each function, plot:
 - Function value vs. epoch.
 - For Rosenbrock and Rastrigin functions, experiment with decreasing the learning rate `alpha` (try values like 0.001 and 0.0001) to observe how it affects convergence.
-- Velocity norm (e.g `np.linalg.norm`) vs. epoch.
+- Velocity norm (e.g `np.linalg.norm`) vs. epoch. Note: velocity is a **vector** (one component per dimension), so we cannot plot it directly as a single value. Instead, we take its norm — a scalar that measures the overall magnitude of the velocity vector.
 
 How does the velocity norm evolve? Does it correlate with convergence speed?
 
@@ -210,13 +215,18 @@ def adam(
     beta2: float,
     number_of_epochs: int,
     epsilon: float = 1e-8
-): 
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     ...
 ```
 
 Where:
 - beta1 is the exponential decay rate for first moment estimates (similar to momentum).
 - beta2 is the exponential decay rate for second moment estimates (variance).
+
+Returns a tuple of:
+- positions: np.ndarray of shape (number_of_epochs, dim) — the optimization path.
+- function_values: np.ndarray of shape (number_of_epochs,) — function value at each epoch.
+- gradient_norms: np.ndarray of shape (number_of_epochs,) — gradient norm at each epoch.
 
 ### 6. Comparing Adam with Momentum
 Run both optimizers on Sphere, Rosenbrock and Rastrigin. Use: 
