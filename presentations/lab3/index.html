@@ -308,6 +308,19 @@
       opacity: 0.75;
     }
 
+    /* Image-only slide */
+    .image-slide.active {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-slide img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+    }
+
     /* Slide number */
     .slide-number {
       position: fixed;
@@ -362,7 +375,12 @@
       </div>
     </div>
 
-    <!-- ============== SLIDE 2: LINEAR EXPLANATION ============== -->
+    <!-- ============== SLIDE: PANDA IMAGE ============== -->
+    <div class="slide image-slide" id="slide-2">
+      <img src="panda.png" alt="Adversarial panda example">
+    </div>
+
+    <!-- ============== SLIDE 3: LINEAR EXPLANATION ============== -->
     <div class="slide" id="slide-2">
       <div class="section-label">Key Insight</div>
       <h2>The Linear Explanation</h2>
@@ -392,7 +410,12 @@
       </div>
     </div>
 
-    <!-- ============== SLIDE 3: FGSM ============== -->
+    <!-- ============== SLIDE: MADRY IMAGE ============== -->
+    <div class="slide image-slide" id="slide-5">
+      <img src="madry.png" alt="Adversarial robustness - Madry et al.">
+    </div>
+
+    <!-- ============== SLIDE 6: FGSM ============== -->
     <div class="slide" id="slide-3">
       <div class="section-label">Attack Method</div>
       <h2>Fast Gradient Sign Method</h2>
