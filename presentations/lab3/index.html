@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adversarial Examples &amp; FGSM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Cardo', serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .slide-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 80px;
+    }
+
+    .slide {
+      display: none !important;
+      width: 100%;
+      max-width: 1400px;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .slide.active {
+      display: block !important;
+      animation: fadeIn 0.3s ease-out;
+      position: relative;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Title slide */
+    .title-slide.active {
+      display: flex !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 60vh;
+    }
+
+    .title-slide h1 {
+      font-family: 'Cardo', serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+      color: #1a1a1a;
+      margin-bottom: 24px;
+    }
+
+    .title-slide .subtitle {
+      font-family: 'Roboto', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 300;
+      color: #666;
+      max-width: 600px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .title-slide .course {
+      font-family: 'Roboto', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #888;
+    }
+
+    /* Section label */
+    .section-label {
+      font-family: 'Roboto', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    /* Content slides */
+    .slide h2 {
+      font-family: 'Cardo', serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+
+    .slide .paper-ref {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 300;
+      color: #888;
+      margin-bottom: 24px;
+      font-style: italic;
+    }
+
+    .slide .paper-ref a {
+      color: #888;
+      text-decoration: underline;
+      text-decoration-color: rgba(136, 136, 136, 0.4);
+      text-underline-offset: 2px;
+    }
+
+    .slide .paper-ref a:hover {
+      color: #555;
+      text-decoration-color: #555;
+    }
+
+    /* Two-column layout */
+    .slide-content {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      min-height: 0;
+    }
+
+    .text-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .viz-col {
+      flex: 1.3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Cards */
+    .card {
+      background: #fafafa;
+      border-left: 4px solid #1a1a1a;
+      border-radius: 6px;
+      padding: 14px 18px;
+    }
+
+    .card h3 {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .card p,
+    .card li {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 300;
+      line-height: 1.65;
+      color: #2a2a2a;
+    }
+
+    .card ul {
+      padding-left: 18px;
+    }
+
+    .card li {
+      margin-bottom: 4px;
+    }
+
+    /* Formula box */
+    .formula-box {
+      background: #fafafa;
+      border: 2px solid #1a1a1a;
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+      font-size: 1.1em;
+      color: #1a1a1a;
+    }
+
+    /* Highlights */
+    .highlight {
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    /* Table */
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.85rem;
+      margin-top: 6px;
+    }
+
+    .mini-table th,
+    .mini-table td {
+      padding: 6px 10px;
+      text-align: left;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    .mini-table th {
+      font-weight: 500;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.78rem;
+    }
+
+    .mini-table td {
+      font-weight: 300;
+      color: #2a2a2a;
+    }
+
+    /* Visualization */
+    .viz-hint {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 300;
+      color: #999;
+      margin-top: 6px;
+      text-align: center;
+      font-style: italic;
+    }
+
+    canvas {
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .controls label {
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: #888;
+    }
+
+    .controls input[type=range] {
+      width: 120px;
+      accent-color: #1a1a1a;
+    }
+
+    .controls button {
+      font-family: 'Roboto', sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      transition: opacity 0.2s;
+    }
+
+    .controls button:hover {
+      opacity: 0.75;
+    }
+
+    /* Slide number */
+    .slide-number {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 1.2rem;
+      color: #999;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="slide-container">
+
+    <!-- ============== SLIDE 0: TITLE ============== -->
+    <div class="slide title-slide active" id="slide-0">
+      <h1>Adversarial Examples</h1>
+      <p class="subtitle">How tiny, imperceptible perturbations fool neural networks with high confidence</p>
+      <p class="course">Stochastic Methods in Machine Learning: AGH</p>
+    </div>
+
+    <!-- ============== SLIDE 1: MOTIVATION ============== -->
+    <div class="slide" id="slide-1">
+      <div class="section-label">Motivation</div>
+      <h2>Why Adversarial Examples?</h2>
+      <p class="paper-ref"><a href="https://arxiv.org/abs/1412.6572" target="_blank">Goodfellow, Shlens &amp; Szegedy, 2015: "Explaining and Harnessing Adversarial Examples"</a></p>
+      <div class="slide-content">
+        <div class="text-col">
+          <div class="card">
+            <h3>The Surprise</h3>
+            <p>Deep neural networks achieve remarkable accuracy, yet <span class="highlight">tiny, carefully chosen perturbations</span> to an input can cause confident misclassifications. These changes are often <span class="highlight">imperceptible</span> to humans.</p>
+          </div>
+          <div class="card">
+            <h3>What This Reveals</h3>
+            <ul>
+              <li>High-performing models do <span class="highlight">not</span> necessarily learn robust, human-like representations</li>
+              <li>Models rely on <span class="highlight">subtle statistical patterns</span> that can be exploited</li>
+              <li>Accuracy alone is insufficient for safety-critical applications</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Definition</h3>
+            <p>An adversarial example $\mathbf{x}_\text{adv} = \mathbf{x} + \boldsymbol{\eta}$ is a perturbed input where $\boldsymbol{\eta}$ is small enough to be unnoticeable, yet causes the model to predict the wrong class with high confidence.</p>
+          </div>
+        </div>
+        <div class="viz-col">
+          <canvas id="adv-demo-canvas" width="480" height="420"></canvas>
+          <p class="viz-hint">A "7" with adversarial noise added. The perturbation is nearly invisible, but the model confidently predicts "3".</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== SLIDE 2: LINEAR EXPLANATION ============== -->
+    <div class="slide" id="slide-2">
+      <div class="section-label">Key Insight</div>
+      <h2>The Linear Explanation</h2>
+      <div class="slide-content">
+        <div class="text-col">
+          <div class="card">
+            <h3>Locally Linear Behavior</h3>
+            <p>Neural networks, despite being nonlinear, behave <span class="highlight">approximately linearly</span> in local regions of input space. The output changes roughly as a dot product with the input perturbation:</p>
+          </div>
+          <div class="formula-box">
+            $$w^\top \mathbf{x}_\text{adv} = w^\top \mathbf{x} + w^\top \boldsymbol{\eta}$$
+          </div>
+          <div class="card">
+            <h3>High Dimensions Amplify</h3>
+            <p>If $\boldsymbol{\eta} = \epsilon \cdot \text{sign}(w)$, each element changes by only $\pm \epsilon$. But the total effect on the output grows as $\epsilon \cdot \|w\|_1$ &mdash; which scales with input dimension $n$.</p>
+            <ul>
+              <li>MNIST: $n = 784$ pixels</li>
+              <li>ImageNet: $n = 150{,}528$ pixels</li>
+              <li>Even $\epsilon = 0.01$ produces a large cumulative shift</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Implication</h3>
+            <p>Adversarial vulnerability is <span class="highlight">not a defect of nonlinearity</span>, but a natural consequence of <span class="highlight">linear behavior in high dimensions</span>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== SLIDE 3: FGSM ============== -->
+    <div class="slide" id="slide-3">
+      <div class="section-label">Attack Method</div>
+      <h2>Fast Gradient Sign Method</h2>
+      <div class="slide-content">
+        <div class="text-col">
+          <div class="formula-box">
+            $$\mathbf{x}_\text{adv} = \mathbf{x} + \epsilon \cdot \text{sign}\bigl(\nabla_{\mathbf{x}} J(\boldsymbol{\theta}, \mathbf{x}, y)\bigr)$$
+          </div>
+          <div class="card">
+            <h3>How It Works</h3>
+            <ul>
+              <li><span class="highlight">$J(\boldsymbol{\theta}, \mathbf{x}, y)$</span>: the training loss (e.g. cross-entropy)</li>
+              <li><span class="highlight">$\nabla_{\mathbf{x}} J$</span>: gradient of loss w.r.t. the <em>input</em> (not the weights)</li>
+              <li><span class="highlight">$\text{sign}(\cdot)$</span>: element-wise sign &mdash; each pixel shifts by exactly $\pm \epsilon$</li>
+              <li><span class="highlight">$\epsilon$</span>: perturbation budget controlling attack strength</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Why It Works</h3>
+            <p>FGSM maximizes the loss increase under an $L_\infty$ constraint. It's a <span class="highlight">single-step</span> attack &mdash; just one forward pass, one backward pass, and one sign operation. Despite its simplicity, it often causes <span class="highlight">high-confidence misclassifications</span>.</p>
+          </div>
+          <div class="card">
+            <h3>Key Observation</h3>
+            <p>FGSM uses the same gradient machinery as training, but applies it to the <span class="highlight">input</span> instead of the <span class="highlight">weights</span>. Optimization is a versatile tool beyond model training.</p>
+          </div>
+        </div>
+        <div class="viz-col">
+          <canvas id="fgsm-canvas" width="480" height="400"></canvas>
+          <div class="controls">
+            <label>$\epsilon$: <input type="range" id="eps-slider" min="1" max="50" value="15"> <span id="eps-val">0.15</span></label>
+            <button id="fgsm-run">Generate Attack</button>
+          </div>
+          <p class="viz-hint">Schematic: the sign of each gradient component determines the perturbation direction per pixel.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== SLIDE 4: RECOMMENDED READING ============== -->
+    <div class="slide" id="slide-4">
+      <div class="section-label">Resources</div>
+      <h2>Recommended Reading</h2>
+      <div style="display:flex; flex-direction:column; gap:16px; padding:20px 40px; max-width:1000px;">
+        <div class="card">
+          <h3>Core Papers</h3>
+          <ul>
+            <li>Goodfellow, Shlens &amp; Szegedy. <a href="https://arxiv.org/pdf/1412.6572" target="_blank" style="color:#2563eb;">Explaining and Harnessing Adversarial Examples</a> (ICLR 2015)</li>
+            <li>Madry, Makelov, Schmidt, Tsipras &amp; Vladu. <a href="https://arxiv.org/abs/1706.06083" target="_blank" style="color:#2563eb;">Towards Deep Learning Models Resistant to Adversarial Attacks</a> (ICLR 2018)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Neural Network Fundamentals</h3>
+          <ul>
+            <li><a href="https://pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html" target="_blank" style="color:#2563eb;">PyTorch Quickstart Tutorial</a> &mdash; practical introduction to neural networks with PyTorch</li>
+            <li>Karpathy. <a href="https://github.com/karpathy/micrograd" target="_blank" style="color:#2563eb;">Micrograd</a> &mdash; a minimal neural network library built from scratch (<a href="https://www.youtube.com/watch?v=VMj-3S1tku0" target="_blank" style="color:#2563eb;">video</a>)</li>
+            <li>3Blue1Brown. <a href="https://www.youtube.com/watch?v=aircAruvnKk" target="_blank" style="color:#2563eb;">But what is a neural network?</a> &mdash; intuitive visual explanation</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>PyTorch Documentation</h3>
+          <ul>
+            <li><a href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html" target="_blank" style="color:#2563eb;">CrossEntropyLoss &mdash; PyTorch</a></li>
+            <li><a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html" target="_blank" style="color:#2563eb;">nn.Linear &mdash; PyTorch</a></li>
+            <li><a href="https://pytorch.org/tutorials/beginner/fgsm_tutorial.html" target="_blank" style="color:#2563eb;">Adversarial Example Generation &mdash; PyTorch Tutorial</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="slide-number">
+    <span id="current-slide">1</span> /
+    <span id="total-slides">7</span>
+  </div>
+
+  <script>
+    // ==================== SLIDE NAVIGATION ====================
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+
+    document.getElementById('total-slides').textContent = totalSlides;
+
+    function showSlide(n) {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (n + totalSlides) % totalSlides;
+      slides[currentSlide].classList.add('active');
+      document.getElementById('current-slide').textContent = currentSlide + 1;
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); showSlide(currentSlide + 1); }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); showSlide(currentSlide - 1); }
+      if (e.key === 'Home') { e.preventDefault(); showSlide(0); }
+      if (e.key === 'End') { e.preventDefault(); showSlide(totalSlides - 1); }
+    });
+
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', e => {
+      const diff = touchStartX - e.changedTouches[0].screenX;
+      if (Math.abs(diff) > 50) { diff > 0 ? showSlide(currentSlide + 1) : showSlide(currentSlide - 1); }
+    });
+
+    // ==================== SLIDE 1: ADVERSARIAL DEMO ====================
+    (function () {
+      const canvas = document.getElementById('adv-demo-canvas');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+
+      // Draw a simple "7" digit representation
+      const digitPixels = [
+        "...............".split(''),
+        "..###########..".split(''),
+        "..###########..".split(''),
+        "..........###..".split(''),
+        ".........###...".split(''),
+        "........###....".split(''),
+        ".......###.....".split(''),
+        "......###......".split(''),
+        ".....###.......".split(''),
+        "....###........".split(''),
+        "...###.........".split(''),
+        "...###.........".split(''),
+        "...###.........".split(''),
+        "...............".split(''),
+      ];
+
+      const cellW = Math.floor(W / 3);
+      const cellH = H;
+      const pixSize = Math.floor(Math.min(cellW, cellH - 60) / 15);
+      const offsetY = 40;
+
+      function drawDigit(ox, oy, pixels, noise, label, sublabel) {
+        const rows = pixels.length;
+        const cols = pixels[0].length;
+        const startX = ox + (cellW - cols * pixSize) / 2;
+        const startY = oy + offsetY;
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const val = pixels[r][c] === '#' ? 220 : 20;
+            const n = noise ? (Math.random() - 0.5) * noise : 0;
+            const v = Math.max(0, Math.min(255, val + n));
+            ctx.fillStyle = `rgb(${v},${v},${v})`;
+            ctx.fillRect(startX + c * pixSize, startY + r * pixSize, pixSize - 1, pixSize - 1);
+          }
+        }
+
+        // Label
+        ctx.fillStyle = '#1a1a1a';
+        ctx.font = '500 14px Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, ox + cellW / 2, oy + 20);
+
+        if (sublabel) {
+          ctx.fillStyle = '#888';
+          ctx.font = '300 12px Roboto, sans-serif';
+          ctx.fillText(sublabel, ox + cellW / 2, oy + offsetY + rows * pixSize + 24);
+        }
+      }
+
+      function drawPlus(x, y) {
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - 10, y); ctx.lineTo(x + 10, y);
+        ctx.moveTo(x, y - 10); ctx.lineTo(x, y + 10);
+        ctx.stroke();
+      }
+
+      function drawEquals(x, y) {
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - 10, y - 4); ctx.lineTo(x + 10, y - 4);
+        ctx.moveTo(x - 10, y + 4); ctx.lineTo(x + 10, y + 4);
+        ctx.stroke();
+      }
+
+      function draw() {
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, W, H);
+
+        drawDigit(0, 0, digitPixels, 0, 'ORIGINAL', 'Prediction: "7" (98%)');
+
+        // Noise panel
+        const noiseStartX = cellW + (cellW - 15 * pixSize) / 2;
+        const noiseStartY = offsetY;
+        ctx.fillStyle = '#1a1a1a';
+        ctx.font = '500 14px Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('PERTURBATION', cellW + cellW / 2, 20);
+        for (let r = 0; r < 14; r++) {
+          for (let c = 0; c < 15; c++) {
+            const v = Math.random() > 0.5 ? 160 : 80;
+            ctx.fillStyle = `rgb(${v},${v},${v})`;
+            ctx.fillRect(noiseStartX + c * pixSize, noiseStartY + r * pixSize, pixSize - 1, pixSize - 1);
+          }
+        }
+        ctx.fillStyle = '#888';
+        ctx.font = '300 12px Roboto, sans-serif';
+        ctx.fillText('sign(gradient) scaled by \u03B5', cellW + cellW / 2, offsetY + 14 * pixSize + 24);
+
+        drawDigit(cellW * 2, 0, digitPixels, 80, 'ADVERSARIAL', 'Prediction: "3" (91%)');
+
+        // Draw + and = symbols
+        const midY = offsetY + 7 * pixSize;
+        drawPlus(cellW, midY);
+        drawEquals(cellW * 2, midY);
+      }
+
+      draw();
+    })();
+
+    // ==================== SLIDE 3: FGSM VISUALIZATION ====================
+    (function () {
+      const canvas = document.getElementById('fgsm-canvas');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+
+      const epsSlider = document.getElementById('eps-slider');
+      const epsVal = document.getElementById('eps-val');
+      const runBtn = document.getElementById('fgsm-run');
+
+      // Simulated gradient grid
+      const gridSize = 20;
+      const cellSize = Math.floor(Math.min(W, H) / gridSize);
+      const gradients = [];
+      for (let r = 0; r < gridSize; r++) {
+        gradients[r] = [];
+        for (let c = 0; c < gridSize; c++) {
+          gradients[r][c] = (Math.random() - 0.5) * 2;
+        }
+      }
+
+      function draw() {
+        const eps = epsSlider.value / 100;
+        epsVal.textContent = eps.toFixed(2);
+
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, W, H);
+
+        const offsetX = (W - gridSize * cellSize) / 2;
+        const offsetY = (H - gridSize * cellSize) / 2;
+
+        // Draw titles
+        ctx.fillStyle = '#888';
+        ctx.font = '500 11px Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('GRADIENT SIGN', W / 2, offsetY - 8);
+
+        for (let r = 0; r < gridSize; r++) {
+          for (let c = 0; c < gridSize; c++) {
+            const g = gradients[r][c];
+            const sign = g >= 0 ? 1 : -1;
+            const intensity = Math.abs(eps * sign) * 255;
+
+            if (sign > 0) {
+              ctx.fillStyle = `rgba(200, 60, 60, ${0.15 + eps * 0.85})`;
+            } else {
+              ctx.fillStyle = `rgba(60, 60, 200, ${0.15 + eps * 0.85})`;
+            }
+            ctx.fillRect(offsetX + c * cellSize, offsetY + r * cellSize, cellSize - 1, cellSize - 1);
+
+            // Arrow
+            const cx = offsetX + c * cellSize + cellSize / 2;
+            const cy = offsetY + r * cellSize + cellSize / 2;
+            const arrowLen = cellSize * 0.3 * eps * 4;
+
+            ctx.strokeStyle = sign > 0 ? '#c03030' : '#3030c0';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy + arrowLen * 0.5);
+            ctx.lineTo(cx, cy - arrowLen * 0.5);
+            ctx.stroke();
+
+            // Arrowhead
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - arrowLen * 0.5);
+            ctx.lineTo(cx - 2, cy - arrowLen * 0.5 + 3 * sign);
+            ctx.moveTo(cx, cy - arrowLen * 0.5);
+            ctx.lineTo(cx + 2, cy - arrowLen * 0.5 + 3 * sign);
+            ctx.stroke();
+          }
+        }
+
+        // Legend
+        ctx.font = '300 11px Roboto, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#c03030';
+        ctx.fillRect(offsetX, offsetY + gridSize * cellSize + 12, 10, 10);
+        ctx.fillStyle = '#666';
+        ctx.fillText('+\u03B5 (increase loss)', offsetX + 16, offsetY + gridSize * cellSize + 21);
+
+        ctx.fillStyle = '#3030c0';
+        ctx.fillRect(offsetX + 160, offsetY + gridSize * cellSize + 12, 10, 10);
+        ctx.fillStyle = '#666';
+        ctx.fillText('\u2013\u03B5 (decrease loss)', offsetX + 176, offsetY + gridSize * cellSize + 21);
+      }
+
+      epsSlider.addEventListener('input', draw);
+      runBtn.addEventListener('click', () => {
+        for (let r = 0; r < gridSize; r++) {
+          for (let c = 0; c < gridSize; c++) {
+            gradients[r][c] = (Math.random() - 0.5) * 2;
+          }
+        }
+        draw();
+      });
+
+      draw();
+    })();
+
+  </script>
+</body>
+
+</html>
