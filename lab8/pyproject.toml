@@ -1,0 +1,15 @@
+[project]
+name = "lab8-cmaes"
+version = "0.1.0"
+description = "CMA-ES lab — AGH Stochastic Methods in Machine Learning"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "cma>=4.0",
+    "gymnasium[box2d]>=1.0",
+    "ipykernel>=6.29",
+    "nbformat>=5.10",
+    "plotly>=5.24",
+    "stable-baselines3>=2.3",
+    "torch>=2.3",
+]
