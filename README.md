@@ -17,7 +17,7 @@ This course explores various problems at the intersection of optimization and ma
 | 5 | Hyperparameter Optimization | Utilizes Optuna framework to fine-tune CatBoost model hyperparameters on the Covertype dataset. Demonstrates practical application of HPO to maximize classification performance in a multiclass problem. |
 | 6 | Bayesian Optimization | Covers various acquisition functions (e.g., Expected Improvement, UCB), focusing on how they manage the exploration-exploitation trade-off. |
 | 7 | Loss Landscape Visualization | **New (lab7_new):** Reproduces key results from ["Visualizing the Loss Landscape of Neural Nets"](https://arxiv.org/abs/1712.09913).<br><br> **Legacy (lab7):** Explores the fundamental properties and significance of the Normal Distribution. |
-| 8 | CMA-ES | Applies the pycma library to evolve policy parameters and solve the OpenAI Gym CartPole balancing task. |
+| 8 | CMA-ES | Two-part lab on the pycma library. Part 1 explores CMA-ES on benchmark functions (Sphere, Rosenbrock, Rastrigin), studying sensitivity to the starting point, the initial step-size $\sigma_0$, and visualizing covariance matrix adaptation. Part 2 applies CMA-ES to reinforcement learning on Gymnasium's LunarLander-v3, evolving MLP policy weights and benchmarking against Random Search and PPO under a shared environment-step budget. |
 | 9 | Neuroevolution | Demonstrates evolutionary training of neural networks by applying CMA-ES to directly optimize network weights for solving a supervised learning problem. |
 | 10 | Differential Evolution | Implements Differential Evolution from scratch. |
 | 11 | LLM × EA | Evolution of Heuristics |
