@@ -1,4 +1,4 @@
-# Lab 8 (new) — Reviewing a Paper With (and Without) an LLM
+# Lab 9 — Reviewing a Paper With (and Without) an LLM
 
 *Goal:* Read a research paper critically, compare your judgment against an LLM reviewer, probe how stable that LLM review is across different prompts, and present a real conference-style accept/reject decision to the rest of the class.
 
