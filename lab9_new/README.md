@@ -21,10 +21,10 @@ The course is full of nature-inspired and stochastic ML methods (PSO, ACO, CMA-E
 
 ## The Papers
 
-- `pso-cnn.pdf` — Particle Swarm Optimization for CNN architecture/training
 - `pso-dnn.pdf` — PSO applied to deep neural network training
 - `aco-cnn.pdf` — Ant Colony Optimization for CNNs
 - `eco-nas.pdf` — Eco / efficiency-oriented Neural Architecture Search
+- `lion.pdf` - Symbolic Discovery of Optimization Algorithms
 
 ## Schedule
 
